@@ -1,0 +1,31 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity .15s;
+}
+button:hover { opacity: .85; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+input, select {
+  background: #1e2130;
+  border: 1px solid #2d3348;
+  border-radius: 6px;
+  color: #e2e8f0;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+}
+input:focus, select:focus { border-color: #4f6ef7; }

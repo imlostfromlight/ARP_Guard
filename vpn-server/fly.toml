@@ -1,0 +1,11 @@
+app = "arpguard-vpn"
+primary_region = "fra"
+
+[build]
+
+[[services]]
+  protocol = "udp"
+  internal_port = 51820
+
+  [[services.ports]]
+    port = 51820
