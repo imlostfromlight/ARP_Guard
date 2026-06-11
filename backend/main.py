@@ -13,7 +13,7 @@ from attacker import Attacker
 from scanner import scan_network, get_local_info, auto_detect_iface
 from dns_spoofer import DnsSpoofer
 from phish_server import PhishServer
-from vpn import generate_keypair, generate_full_config
+from vpn import generate_keypair, generate_full_config, deploy_server_config
 
 try:
     from scapy.all import get_if_list, get_if_addr
@@ -233,6 +233,14 @@ class VpnGenerateRequest(BaseModel):
 @app.post("/api/vpn/generate")
 def vpn_generate(req: VpnGenerateRequest):
     return generate_full_config(req.server_ip, req.server_port, req.client_tunnel_ip, req.dns)
+
+
+class VpnDeployRequest(BaseModel):
+    server_config: str
+
+@app.post("/api/vpn/deploy")
+def vpn_deploy(req: VpnDeployRequest):
+    return deploy_server_config(req.server_config)
 
 # ---------------------------------------------------------------------------
 # Phish server

@@ -1,5 +1,15 @@
 import base64
+import subprocess
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+
+
+def _default_iface() -> str:
+    try:
+        out = subprocess.check_output(['ip', 'route', 'get', '8.8.8.8'], text=True)
+        parts = out.split()
+        return parts[parts.index('dev') + 1]
+    except Exception:
+        return 'eth0'
 
 
 def generate_keypair() -> dict:
@@ -17,16 +27,18 @@ def generate_full_config(server_ip: str, server_port: int = 51820,
                           dns: str = '1.1.1.1') -> dict:
     server_kp = generate_keypair()
     client_kp = generate_keypair()
+    iface = _default_iface()
 
     server_config = (
         f"[Interface]\n"
         f"PrivateKey = {server_kp['private']}\n"
         f"Address = 10.0.0.1/24\n"
         f"ListenPort = {server_port}\n"
-        f"PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; "
-        f"iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n"
+        f"PostUp = sysctl -w net.ipv4.ip_forward=1; "
+        f"iptables -A FORWARD -i wg0 -j ACCEPT; "
+        f"iptables -t nat -A POSTROUTING -o {iface} -j MASQUERADE\n"
         f"PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; "
-        f"iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n\n"
+        f"iptables -t nat -D POSTROUTING -o {iface} -j MASQUERADE\n\n"
         f"[Peer]\n"
         f"PublicKey = {client_kp['public']}\n"
         f"AllowedIPs = {client_tunnel_ip}/32\n"
@@ -51,3 +63,21 @@ def generate_full_config(server_ip: str, server_port: int = 51820,
         'client_pubkey': client_kp['public'],
         'client_privkey': client_kp['private'],
     }
+
+
+def deploy_server_config(server_config: str) -> dict:
+    config_path = '/etc/wireguard/wg0.conf'
+    try:
+        with open(config_path, 'w') as f:
+            f.write(server_config)
+        subprocess.run(['wg-quick', 'down', 'wg0'], capture_output=True)
+        result = subprocess.run(['wg-quick', 'up', 'wg0'], capture_output=True, text=True, check=True)
+        return {'success': True, 'output': result.stdout}
+    except PermissionError:
+        return {'success': False, 'error': 'Permission denied — run backend as root'}
+    except FileNotFoundError:
+        return {'success': False, 'error': 'wg-quick not found — install WireGuard on this machine'}
+    except subprocess.CalledProcessError as e:
+        return {'success': False, 'error': e.stderr or 'wg-quick failed'}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
