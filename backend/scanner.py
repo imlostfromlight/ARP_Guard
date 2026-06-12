@@ -20,9 +20,12 @@ def auto_detect_iface() -> str:
             candidates.append((iface, ip))
         except Exception:
             continue
-    # Prefer common hotspot/private ranges: 192.168.43.x, 10.x, 192.168.x
+    # Prefer common hotspot/private ranges: 192.168.43.x, 10.x, 172.x, 192.168.x
     for iface, ip in candidates:
         if ip.startswith("192.168.43.") or ip.startswith("10."):
+            return iface
+    for iface, ip in candidates:
+        if ip.startswith("172.20."):
             return iface
     for iface, ip in candidates:
         if ip.startswith("192.168."):

@@ -125,6 +125,23 @@ export default function App() {
     } else { await fetch(`${API}/phish/stop`, { method: 'POST' }); setPhishActive(false) }
   }
 
+  const [vpnBlocked, setVpnBlocked] = useState(false)
+
+  const demoSimulateCapture = () => {
+    setVpnBlocked(false)
+    setPhishCaptures(prev => [{
+      src_ip: '172.20.10.3',
+      time: now(),
+      creds: { email: 'victim@gmail.com', password: 'qwerty123' }
+    }, ...prev])
+    setScore(s => Math.max(0, s - 40))
+  }
+
+  const demoSimulateVpn = () => {
+    setVpnBlocked(true)
+    setScore(100)
+  }
+
   const gateway = scanResult ? { ip: scanResult.gateway_ip, mac: scanResult.gateway_mac } : null
   const localInfo = scanResult ? { ip: scanResult.ip, mac: scanResult.mac } : null
 
@@ -235,6 +252,28 @@ export default function App() {
       )}
 
       <HttpCapture packets={httpPackets} />
+
+      {/* Demo Mode */}
+      <div style={{ background: '#161922', border: '1px solid #2d3748', borderRadius: 10, padding: '14px 18px' }}>
+        <div style={{ fontSize: 12, color: '#718096', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>🎭 Demo Mode</div>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <button onClick={demoSimulateCapture} style={{ background: '#742a2a', color: '#fff', padding: '10px 20px', borderRadius: 6, border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+            ⚠️ Simulate Attack (No VPN)
+          </button>
+          <button onClick={demoSimulateVpn} style={{ background: '#1a4731', color: '#68d391', padding: '10px 20px', borderRadius: 6, border: '1px solid #276749', cursor: 'pointer', fontWeight: 600 }}>
+            🛡 Simulate VPN Protection
+          </button>
+        </div>
+        {vpnBlocked && (
+          <div style={{ marginTop: 14, background: '#0d2b1a', border: '1px solid #276749', borderRadius: 8, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 28 }}>🛡</span>
+            <div>
+              <div style={{ color: '#68d391', fontWeight: 700, fontSize: 16 }}>VPN PROTECTED — Credentials Blocked</div>
+              <div style={{ color: '#4a5568', fontSize: 13, marginTop: 4 }}>DNS queries are routed through the encrypted VPN tunnel. DNS spoofing has no effect.</div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
