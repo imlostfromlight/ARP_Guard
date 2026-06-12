@@ -139,6 +139,7 @@ export default function App() {
 
   const demoSimulateVpn = () => {
     setVpnBlocked(true)
+    setPhishCaptures([])
     setScore(100)
   }
 
@@ -265,12 +266,8 @@ export default function App() {
           </button>
         </div>
         {vpnBlocked && (
-          <div style={{ marginTop: 14, background: '#0d2b1a', border: '1px solid #276749', borderRadius: 8, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 28 }}>🛡</span>
-            <div>
-              <div style={{ color: '#68d391', fontWeight: 700, fontSize: 16 }}>VPN PROTECTED — Credentials Blocked</div>
-              <div style={{ color: '#4a5568', fontSize: 13, marginTop: 4 }}>DNS queries are routed through the encrypted VPN tunnel. DNS spoofing has no effect.</div>
-            </div>
+          <div style={{ marginTop: 14, color: '#68d391', fontSize: 13 }}>
+            ✓ VPN active — no credentials captured
           </div>
         )}
       </div>
